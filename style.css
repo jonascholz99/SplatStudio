@@ -1,0 +1,72 @@
+body,
+html {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #fff;
+  font-family: sans-serif;
+  font-size: 14px;
+}
+
+canvas {
+  width: 100vw;
+  height: 100vh;
+}
+
+#menu-toggle {
+  padding: 10px;
+  background-color: #f0f0f0;
+  border: none;
+  cursor: pointer;
+}
+
+#side-menu {
+  padding: 20px;  
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  transition: left 0.5s;
+  overflow: hidden; /* Stellt sicher, dass keine inneren Elemente über den Rand hinausragen */
+}
+
+
+#side-menu h2, #side-menu label {
+  margin: 10px 0;
+  margin-top: 40px;
+}
+
+#side-menu input, #side-menu button {
+  margin: 5px 0;
+  width: 100%;
+}
+
+#side-menu hr {
+  border: none;        /* Entfernt die Standardgrenze */
+  height: 1px;         /* Setzt die Höhe der Linie */
+  background-color: #ccc; /* Wählt die Farbe der Linie */
+  margin: 20px 0;      /* Fügt oben und unten Abstand hinzu */
+}
+
+#vector3UpCorner {
+  display: flex;
+  flex-direction: row; 
+  align-items: center; 
+  gap: 10px; 
+  padding: 20px;
+  border: 1px solid #ccc;  
+}
+
+#vector3LowerCorner {
+  display: flex;
+  flex-direction: row; 
+  align-items: center; 
+  gap: 10px; 
+  padding: 20px;
+  border: 1px solid #ccc;  
+}
+
+#vector3Form label {
+  margin-right: 5px; /* Etwas Abstand rechts vom Label */
+}
+
+#vector3Form input {
+  width: 60px; /* Setzt eine spezifische Breite für die Eingabefelder */
+}

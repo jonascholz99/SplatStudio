@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="./style.css" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>gaussian splat</title>
+    </head>
+
+    <body>
+        <button id="menu-toggle" style="position: absolute; top: 10px; left: 10px; z-index: 100;">Menu</button>
+        <div id="side-menu" style="position: fixed; left: -300px; top: 0; width: 250px; height: 90%; background: white; z-index: 99; transition: left 0.5s; overflow-y: auto;">
+            
+            <hr>
+            <h5 id="splatNumber">Max number of splats: </h5>
+            <hr>
+
+            <h2>SPLAT Actions</h2>
+            <h4 id="selectedSplats">currently selected: </h4>   
+            <button id="select-all">Select all</button>  
+            <button id="select-none">Select none</button> 
+            <button id="invert-seclection">Invert Selection</button>  
+
+            <hr>     
+            
+            <button id="show-all">Show all</button>  
+            <button id="show-none">Show none</button>    
+            
+            <hr>
+            
+            <button id="render-selected-splats">Render only selected</button>            
+            <button id="render-unselected-splats">Render except selected</button>    
+            
+            <hr>
+            
+            <button id="render-center-splats">Show center of splats</button>    
+            <hr>
+
+            <h2>Select Splats per index</h2>
+            <label for="number-splats">Number of splats:</label>
+            <input type="number" id="number-splats" value="1">
+            
+            <button id="start-show-splats">Select</button>
+
+            <hr>
+
+            <h2>Select Splats per Layer</h2>
+            <!-- Dropdown um zwischen x, y und z Achse zu wählen -->
+            <label for="axis-select">Choose an axis:</label>
+            <select id="axis-select">
+                <option value="x">X Axis</option>
+                <option value="y">Y Axis</option>
+                <option value="z">Z Axis</option>
+            </select>
+
+            <label for="layer-value">Value:</label>
+            <input type="number" id="layer-value" value="0">
+
+            <label for="toggle-feature-pos-neg">Positive direction:</label>
+            <input type="checkbox" id="toggle-feature-pos-neg" name="toggle-feature-pos-neg">
+
+            <button id="select-splats">Select</button>
+
+            <hr>
+
+            <h2>Select per Cube</h2> 
+            <label for="vector3UpCorner">Upper corner:</label>
+            <div id="vector3UpCorner">
+                <div>
+                    <label for="vecX">X:</label>
+                    <input type="number" id="vecX_uc" name="vecX" step="any" value="0">
+                </div>
+                <div>
+                    <label for="vecY">Y:</label>
+                    <input type="number" id="vecY_uc" name="vecY" step="any" value="0">
+                </div>
+                <div>
+                    <label for="vecZ">Z:</label>
+                    <input type="number" id="vecZ_uc" name="vecZ" step="any" value="0">
+                </div>                
+            </div>
+
+            <label for="vector3LowerCorner">Lower corner:</label>
+            <div id="vector3LowerCorner">
+                <div>
+                    <label for="vecX">X:</label>
+                    <input type="number" id="vecX_lc" name="vecX" step="any" value="0">
+                </div>
+                <div>
+                    <label for="vecY">Y:</label>
+                    <input type="number" id="vecY_lc" name="vecY" step="any" value="0">
+                </div>
+                <div>
+                    <label for="vecZ">Z:</label>
+                    <input type="number" id="vecZ_lc" name="vecZ" step="any" value="0">
+                </div>                
+            </div>
+            
+            <button id="select-splats-cube">Select</button>
+            <hr>
+
+            <h2>Select Splats per Mouse</h2>        
+            <button id="select-splats-mouse">Select</button>
+
+            <hr>
+
+            <h2>Select Splats Camera Frustum</h2>        
+            <button id="select-splats-camera-frustum">Select</button>
+            <button id="show-splats-camera-frustum">Select and Show</button>
+
+            <hr>
+
+            <h2>Set transparency</h2>        
+            <button id="set-transparency">Set</button>
+        </div>
+
+        <canvas id="canvas"></canvas>
+        <script src="./main.js" type="module"></script>
+    </body>
+</html>
