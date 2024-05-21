@@ -1,4 +1,4 @@
-import * as SPLAT from '@jonascholz/gaussian-splatting'
+import * as SPLAT from "@jonascholz/gaussian-splatting"
 
 const canvas = document.getElementById("canvas");
 const renderer = new SPLAT.WebGLRenderer(canvas);
@@ -18,14 +18,14 @@ let renderPrograms = [];
 let currentlySelectedSplats = [];
 let raycaster;
 
-async function main() 
-{    
+async function main()
+{
     var url = "./zw1027_4.splat";
     splat = await SPLAT.Loader.LoadAsync(url, scene);
 
- 
+
     splatNumber.innerText = "Max number of splats: " + splat.splatCount;
-  
+
     renderer.addProgram(new SPLAT.AxisProgram(renderer, []));
 
     const handleResize = () => {
@@ -63,15 +63,15 @@ document.getElementById('menu-toggle').addEventListener('click', function() {
 // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 //                                         Select all
 // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-document.getElementById('select-all').addEventListener('click', async function() {    
+document.getElementById('select-all').addEventListener('click', async function() {
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
     clearSelection();
 
-    splat.splats.forEach(async singleSplat => {        
-        singleSplat.Select(true);      
-        currentlySelectedSplats.push(singleSplat);                       
+    splat.splats.forEach(async singleSplat => {
+        singleSplat.Selected = 1;
+        currentlySelectedSplats.push(singleSplat);
     })
-    splat.updateRenderingOfSplats();  
+    splat.applySelection();
 });
 
 // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -81,10 +81,31 @@ document.getElementById('select-none').addEventListener('click', async function(
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
     clearSelection();
 
-    splat.splats.forEach(async singleSplat => {        
-        singleSplat.Select(false);       
+    splat.splats.forEach(async singleSplat => {
+        singleSplat.Selected = 0;
     })
-    splat.updateRenderingOfSplats();  
+    splat.updateRenderingOfSplats();
+});
+
+// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+//                                      invert selection
+// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+document.getElementById('invert-seclection').addEventListener('click', async function() {
+    document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
+
+    let tmpList = []
+    splat.splats.forEach(async singleSplat => {
+        if(singleSplat.Selected === 1) {
+            singleSplat.Selected = 0;
+        } else {
+            singleSplat.Selected = 1;
+            tmpList.push(singleSplat);
+        }
+    })
+    splat.updateRenderingOfSplats();
+
+    await clearSelection();
+    currentlySelectedSplats = tmpList;
 });
 
 // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -93,10 +114,10 @@ document.getElementById('select-none').addEventListener('click', async function(
 document.getElementById('show-all').addEventListener('click', async function() {
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
 
-    splat.splats.forEach(async singleSplat => {        
-        singleSplat.Render(true);       
+    splat.splats.forEach(async singleSplat => {
+        singleSplat.Rendered = 1;
     })
-    splat.updateRenderingOfSplats();  
+    splat.updateRenderingOfSplats();
 });
 
 // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -105,85 +126,65 @@ document.getElementById('show-all').addEventListener('click', async function() {
 document.getElementById('show-none').addEventListener('click', async function() {
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
 
-    splat.splats.forEach(async singleSplat => {        
-        singleSplat.Render(false);               
+    splat.splats.forEach(async singleSplat => {
+        singleSplat.Rendered = 0;
     })
-    splat.updateRenderingOfSplats();      
-});
-// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-//                                      invert selection
-// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-document.getElementById('invert-seclection').addEventListener('click', async function() {    
-    document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
-
-    let tmpList = []    
-    splat.splats.forEach(async singleSplat => {        
-        if(singleSplat.Selection[0] === 1) {            
-            singleSplat.Select(false);
-        } else {            
-            singleSplat.Select(true);
-            tmpList.push(singleSplat);
-        }        
-    })
-    splat.updateRenderingOfSplats();  
-    
-    await clearSelection();    
-    currentlySelectedSplats = tmpList;    
+    splat.updateRenderingOfSplats();
 });
 
 // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 //                                    render selected splats
 // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-document.getElementById('render-selected-splats').addEventListener('click', function() {    
+document.getElementById('render-selected-splats').addEventListener('click', function() {
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
 
-    splat.splats.forEach(async singleSplat => {        
-        singleSplat.Render(false);               
+    splat.splats.forEach(async singleSplat => {
+        singleSplat.Rendered = 0;
     })
     currentlySelectedSplats.forEach(singleSplat => {
-        singleSplat.Render(true);               
+        singleSplat.Rendered = 1;
     })
-    splat.updateRenderingOfSplats();   
+    splat.updateRenderingOfSplats();
 });
 
 // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 //                                    render except selected
 // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-document.getElementById('render-unselected-splats').addEventListener('click', async function() {    
+document.getElementById('render-unselected-splats').addEventListener('click', async function() {
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
 
-    splat.splats.forEach(async singleSplat => {        
-        singleSplat.Render(true);               
+    splat.splats.forEach(async singleSplat => {
+        singleSplat.Rendered = 1;
     })
     currentlySelectedSplats.forEach(singleSplat => {
-        singleSplat.Render(false);               
+        singleSplat.Rendered = 0;
     })
-    splat.updateRenderingOfSplats();     
+    splat.updateRenderingOfSplats();
 });
 
 // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 //                                    render center selected
 // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-document.getElementById('render-center-splats').addEventListener('click', async function() {   
-    removeAllRenderPrograms(); 
+document.getElementById('render-center-splats').addEventListener('click', async function() {
+    removeAllRenderPrograms();
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
 
     var leftCorners = []
     var rightCorners = []
     currentlySelectedSplats.forEach(singleSplat => {
-        let bounds = singleSplat.bounds;           
-                
+        let bounds = singleSplat.bounds;
+
         let centerColor = new Float32Array([1.0, 1.0, 0.0, 0.6]);
         let centerCorner1 = new Float32Array([bounds.center().x-0.05, bounds.center().y-0.05, bounds.center().z-0.05]);
-        let centerCorner2 = new Float32Array([bounds.center().x+0.05, bounds.center().y+0.05, bounds.center().z+0.05]);                
+        let centerCorner2 = new Float32Array([bounds.center().x+0.05, bounds.center().y+0.05, bounds.center().z+0.05]);
 
         leftCorners.push(centerCorner1);
         rightCorners.push(centerCorner2);
 
-        var centerProgram = new SPLAT.MultibleCubesProgram(renderer, [], leftCorners, rightCorners, centerColor);            
+        var centerProgram = new SPLAT.MultibleCubesProgram(renderer, [], leftCorners, rightCorners, centerColor);
         renderPrograms.push(centerProgram);
         renderer.addProgram(centerProgram);
-    })    
+    })
 });
 
 
@@ -191,36 +192,37 @@ document.getElementById('start-show-splats').addEventListener('click', function(
     clearSelection();
 
     const splatCount = parseInt(document.getElementById('number-splats').value, 10);
-    
+
 
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
-    for (let i = 0; i < splatCount; i++) {        
-        splat.selectSplat(i, true);                
-        
-        currentlySelectedSplats.push(splat.splats[i]);                      
+    for (let i = 0; i < splatCount; i++) {
+        splat.selectSplat(i, true);
+
+        currentlySelectedSplats.push(splat.splats[i]);
     }
     splat.updateRenderingOfSplats();
+    console.log(splat._data.selection)
 });
 
 
 document.getElementById('select-splats').addEventListener('click', function() {
-    clearSelection();    
+    clearSelection();
 
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
-    
+
     var layerValue = document.getElementById('layer-value').value;
     var isPositive = document.getElementById('toggle-feature-pos-neg').checked;
     var selectedAxis = document.getElementById('axis-select').value;
 
     var selectedSplat = _intersectionTester.testLayer(layerValue, isPositive, selectedAxis);
 
-    if (selectedSplat !== null){            
+    if (selectedSplat !== null){
         selectedSplat.forEach(singleSplat => {
-            singleSplat.Select(true)
+            singleSplat.Selected = 1
             currentlySelectedSplats.push(singleSplat);
-        });        
-        splat.updateRenderingOfSplats();      
-    } 
+        });
+        splat.updateRenderingOfSplats();
+    }
 
 });
 
@@ -245,17 +247,17 @@ function handleMouseDown(event) {
     if (event.button === 0) {
         const x = (event.clientX / canvas.clientWidth) * 2 - 1;
         const y = -(event.clientY / canvas.clientHeight) * 2 + 1;
-                
+
         console.log("mouse Position: (" + x + " ; " + y + ")")
         var selectedSplat = _intersectionTester.testPointSingleSplats(x, y);
-                
-        if (selectedSplat !== null){            
+
+        if (selectedSplat !== null){
             selectedSplat.forEach(singleSplat => {
-                singleSplat.Select(true)      
-                currentlySelectedSplats.push(singleSplat);          
-            });        
-            splat.updateRenderingOfSplats();      
-        } 
+                singleSplat.Selected = 1;
+                currentlySelectedSplats.push(singleSplat);
+            });
+            splat.updateRenderingOfSplats();
+        }
 
         removeMouseListener();
     }
@@ -266,59 +268,59 @@ document.getElementById("show-splats-camera-frustum").addEventListener("click", 
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
 
     var selectedSplat = raycaster.testCameraViewFrustum(camera);
-    if (selectedSplat !== null){ 
-        console.log("found: " + selectedSplat.length)           
+    if (selectedSplat !== null){
+        console.log("found: " + selectedSplat.length)
         selectedSplat.forEach(singleSplat => {
-            singleSplat.Select(true)  
-            currentlySelectedSplats.push(singleSplat);              
-        });        
-        splat.updateRenderingOfSplats();      
-    } 
+            singleSplat.Selected = 1
+            currentlySelectedSplats.push(singleSplat);
+        });
+        splat.updateRenderingOfSplats();
+    }
 
     setTimeout(function() {
         renderer.removeAllPrograms();
-    }, 9000); 
+    }, 9000);
 
     setTimeout(function() {
         clearSelection();
 
-        splat.splats.forEach(async singleSplat => {        
-            singleSplat.Select(false);       
+        splat.splats.forEach(async singleSplat => {
+            singleSplat.Selected = 0;
         })
-        splat.updateRenderingOfSplats();  
-    }, 5500); 
+        splat.updateRenderingOfSplats();
+    }, 5500);
 
     setTimeout(function() {
-        splat.splats.forEach(async singleSplat => {        
-            singleSplat.Render(false);               
+        splat.splats.forEach(async singleSplat => {
+            singleSplat.Rendered = 0;
         })
         currentlySelectedSplats.forEach(singleSplat => {
-            singleSplat.Render(true);               
+            singleSplat.Rendered = 1;
         })
-        splat.updateRenderingOfSplats(); 
-    }, 5000);     
+        splat.updateRenderingOfSplats();
+    }, 5000);
 });
 
 document.getElementById("select-splats-camera-frustum").addEventListener("click", function() {
     clearSelection();
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
 
-    var selectedSplat = raycaster.testCameraViewFrustum(camera);
-    if (selectedSplat !== null){ 
-        console.log("found: " + selectedSplat.length)           
+    var selectedSplat = raycaster.testCameraViewFrustum(camera, true, 5);
+    if (selectedSplat !== null){
+        console.log("found: " + selectedSplat.length)
         selectedSplat.forEach(singleSplat => {
-            singleSplat.Select(true)  
-            currentlySelectedSplats.push(singleSplat);              
-        });        
-        splat.updateRenderingOfSplats();      
-    } 
+            singleSplat.Selected = 1;
+            currentlySelectedSplats.push(singleSplat);
+        });
+        splat.updateRenderingOfSplats();
+    }
 
 });
 
 document.getElementById("select-splats-cube").addEventListener("click", function() {
     clearSelection();
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
-    
+
     removeAllRenderPrograms();
 
     const x1 = parseFloat(document.getElementById('vecX_uc').value);
@@ -329,36 +331,46 @@ document.getElementById("select-splats-cube").addEventListener("click", function
     const y2 = parseFloat(document.getElementById('vecY_lc').value);
     const z2 = parseFloat(document.getElementById('vecZ_lc').value);
 
+    let color = new Float32Array([1.0, 1.0, 0.0, 0.6]);
+
     let upperLeftCorner = new Float32Array([x1, y1, z1]);
     let bottomRightCorner = new Float32Array([x2, y2, z2]);
 
-    var renderProgram = new SPLAT.CubeVisualisationProgram(renderer, [], upperLeftCorner, bottomRightCorner);
+    var renderProgram = new SPLAT.CubeVisualisationProgram(renderer, [], [upperLeftCorner, bottomRightCorner], color);
     renderPrograms.push(renderProgram);
     renderer.addProgram(renderProgram);
 
     var selectedSplat = raycaster.testBox(upperLeftCorner, bottomRightCorner);
-    if (selectedSplat !== null){ 
-        console.log("found: " + selectedSplat.length)           
+    if (selectedSplat !== null){
+        console.log("found: " + selectedSplat.length)
         selectedSplat.forEach(singleSplat => {
-            singleSplat.Select(true)  
-            currentlySelectedSplats.push(singleSplat);              
-        });        
-        splat.updateRenderingOfSplats();      
-    } 
+            singleSplat.Selected = 1;
+            currentlySelectedSplats.push(singleSplat);
+        });
+        splat.updateRenderingOfSplats();
+    }
 
     setTimeout(function() {
-        removeAllRenderPrograms();  
-    }, 10000); 
+        removeAllRenderPrograms();
+    }, 10000);
 })
 
 document.getElementById("set-transparency").addEventListener("click", function() {
 
     console.log(splat.splats[0].Color)
-    splat.splats.forEach(async singleSplat => {                
-        let color = new SPLAT.Vector4(singleSplat.Color[0], singleSplat.Color[1], singleSplat.Color[2], 5);
-        singleSplat.ChangeColor(color);      
+    splat.splats.forEach(async singleSplat => {
+        let color = new Uint8Array([singleSplat.Color[0], singleSplat.Color[1], singleSplat.Color[2], 5]);
+        singleSplat.Color = color;
     })
-    splat.updateRenderingOfSplats();  
+    splat.updateRenderingOfSplats();
+})
+
+document.getElementById("Reset-transparency").addEventListener("click", function() {
+
+    splat.splats.forEach(async singleSplat => {
+        singleSplat.ResetColor();
+    })
+    splat.updateRenderingOfSplats();
 })
 
 function removeAllRenderPrograms() {
@@ -374,9 +386,9 @@ function updateSelectedSplats() {
 
 async function clearSelection() {
     currentlySelectedSplats.forEach(singleSplat => {
-        singleSplat.Select(false)               
+        singleSplat.Select = 0
     })
-    splat.updateRenderingOfSplats();  
+    splat.updateRenderingOfSplats();
 
     currentlySelectedSplats.splice(0, currentlySelectedSplats.length);
 }
