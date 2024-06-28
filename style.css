@@ -70,3 +70,59 @@ canvas {
 #vector3Form input {
   width: 60px; /* Setzt eine spezifische Breite für die Eingabefelder */
 }
+
+.slider-container {
+    display: flex;
+    align-items: center;
+}
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+.slider-wrapper {
+    position: relative;
+    width: 100%;
+    margin: 0 10px;
+}
+
+#controlBox {
+    position: fixed;
+    bottom: -300px;
+    left: 0;
+    right: 0;
+    margin: auto;
+    width: 500px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    padding: 20px;
+    box-sizing: border-box;
+    transition: bottom 0.5s;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.slider-group {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+input[type="range"] {
+    flex: 1 0 60%; /* Anpassung für mehr Platz für die Labels */
+}
+.slider-value {
+    flex: 0 1 30%; /* Platzanpassung für Textzentrierung */
+    text-align: center;
+}
+.slider-label {
+    flex: 0 1 10%; /* Bereitstellung von Platz für die Überschrift */
+    text-align: right;
+    margin-right: 10px;
+    font-weight: bold;
+}
+#closeButton {
+    margin-top: 10px;
+}

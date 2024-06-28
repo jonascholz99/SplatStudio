@@ -18,6 +18,8 @@ let renderPrograms = [];
 let currentlySelectedSplats = [];
 let raycaster;
 
+let nodeBox, octreeRenderProgram;
+
 async function main()
 {
     var url = "./zw1027_4.splat";
@@ -61,17 +63,34 @@ document.getElementById('menu-toggle').addEventListener('click', function() {
 });
 
 // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+//                                         Reset
+// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+document.getElementById('reset').addEventListener('click', async function() {
+    document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
+    await clearSelection();
+    removeAllRenderPrograms();
+
+    splat.splats.forEach(singleSplat => {
+        singleSplat.Selected = 0;
+        singleSplat.Rendered = 1;
+        singleSplat.ResetColor();
+    })
+    splat.applyRendering();
+    
+});
+
+// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 //                                         Select all
 // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 document.getElementById('select-all').addEventListener('click', async function() {
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
-    clearSelection();
+    await clearSelection();
 
-    splat.splats.forEach(async singleSplat => {
+    splat.splats.forEach(singleSplat => {
         singleSplat.Selected = 1;
         currentlySelectedSplats.push(singleSplat);
     })
-    splat.applySelection();
+    splat.applyRendering();
 });
 
 // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -81,10 +100,10 @@ document.getElementById('select-none').addEventListener('click', async function(
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
     clearSelection();
 
-    splat.splats.forEach(async singleSplat => {
+    splat.splats.forEach(singleSplat => {
         singleSplat.Selected = 0;
     })
-    splat.updateRenderingOfSplats();
+    splat.applyRendering();
 });
 
 // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -94,7 +113,7 @@ document.getElementById('invert-seclection').addEventListener('click', async fun
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
 
     let tmpList = []
-    splat.splats.forEach(async singleSplat => {
+    splat.splats.forEach(singleSplat => {
         if(singleSplat.Selected === 1) {
             singleSplat.Selected = 0;
         } else {
@@ -102,7 +121,7 @@ document.getElementById('invert-seclection').addEventListener('click', async fun
             tmpList.push(singleSplat);
         }
     })
-    splat.updateRenderingOfSplats();
+    splat.applyRendering();
 
     await clearSelection();
     currentlySelectedSplats = tmpList;
@@ -114,10 +133,10 @@ document.getElementById('invert-seclection').addEventListener('click', async fun
 document.getElementById('show-all').addEventListener('click', async function() {
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
 
-    splat.splats.forEach(async singleSplat => {
+    splat.splats.forEach(singleSplat => {
         singleSplat.Rendered = 1;
     })
-    splat.updateRenderingOfSplats();
+    splat.applyRendering();
 });
 
 // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -126,10 +145,10 @@ document.getElementById('show-all').addEventListener('click', async function() {
 document.getElementById('show-none').addEventListener('click', async function() {
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
 
-    splat.splats.forEach(async singleSplat => {
+    splat.splats.forEach(singleSplat => {
         singleSplat.Rendered = 0;
     })
-    splat.updateRenderingOfSplats();
+    splat.applyRendering();
 });
 
 // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -138,13 +157,11 @@ document.getElementById('show-none').addEventListener('click', async function() 
 document.getElementById('render-selected-splats').addEventListener('click', function() {
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
 
-    splat.splats.forEach(async singleSplat => {
-        singleSplat.Rendered = 0;
-    })
+    splat.data.resetRendering();
     currentlySelectedSplats.forEach(singleSplat => {
         singleSplat.Rendered = 1;
     })
-    splat.updateRenderingOfSplats();
+    splat.applyRendering();
 });
 
 // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -153,13 +170,13 @@ document.getElementById('render-selected-splats').addEventListener('click', func
 document.getElementById('render-unselected-splats').addEventListener('click', async function() {
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
 
-    splat.splats.forEach(async singleSplat => {
+    splat.splats.forEach(singleSplat => {
         singleSplat.Rendered = 1;
     })
     currentlySelectedSplats.forEach(singleSplat => {
         singleSplat.Rendered = 0;
     })
-    splat.updateRenderingOfSplats();
+    splat.applyRendering();
 });
 
 // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -169,25 +186,124 @@ document.getElementById('render-center-splats').addEventListener('click', async 
     removeAllRenderPrograms();
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
 
-    var leftCorners = []
-    var rightCorners = []
+    let leftCorners = []
+    let rightCorners = []
+    let centerColor = new Float32Array([1.0, 1.0, 0.0, 0.6]);
     currentlySelectedSplats.forEach(singleSplat => {
         let bounds = singleSplat.bounds;
 
-        let centerColor = new Float32Array([1.0, 1.0, 0.0, 0.6]);
         let centerCorner1 = new Float32Array([bounds.center().x-0.05, bounds.center().y-0.05, bounds.center().z-0.05]);
         let centerCorner2 = new Float32Array([bounds.center().x+0.05, bounds.center().y+0.05, bounds.center().z+0.05]);
 
         leftCorners.push(centerCorner1);
         rightCorners.push(centerCorner2);
 
-        var centerProgram = new SPLAT.MultibleCubesProgram(renderer, [], leftCorners, rightCorners, centerColor);
-        renderPrograms.push(centerProgram);
-        renderer.addProgram(centerProgram);
     })
+    let centerProgram = new SPLAT.MultibleCubesProgram(renderer, [], leftCorners, rightCorners, centerColor);
+    renderPrograms.push(centerProgram);
+    renderer.addProgram(centerProgram);
+});
+
+// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+//                                      Visualise Octree
+// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+document.getElementById('show-octree').addEventListener('click', function() {
+    document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
+    
+    var box = document.getElementById('controlBox');
+    box.style.bottom = '30px';
+    
+
+    const sliderOctree = document.getElementById('slider-octree-level');
+    const level = parseInt(sliderOctree.value, 10);
+    octreeRenderProgram = new SPLAT.OctreeHelper(renderer, [],  splat.octree, level);
+    renderer.addProgram(octreeRenderProgram);
+    
+    setSliderValues();
+});
+
+document.getElementById('slider-octree-level').addEventListener('change', function() {
+    if(nodeBox) {
+        nodeBox.ereaseBox(renderer);
+    }
+    
+    setSliderValues();
+});
+
+document.getElementById('slider-level-value').addEventListener('change', function() {
+    if(nodeBox) {
+        nodeBox.ereaseBox(renderer);
+    }
+
+    setSliderValues();
+});
+
+function setSliderValues() {
+    const sliderOctree = document.getElementById('slider-octree-level');
+    const level = parseInt(sliderOctree.value, 10);
+    document.getElementById('octreeLevel').textContent = level;
+    
+    const sliderLevelValue = document.getElementById('slider-level-value');
+    let value = parseInt(sliderLevelValue.value);
+    document.getElementById('levelNumber').textContent = value;
+    
+    sliderLevelValue.max = splat.octree.findNodesByLevel(level).length-1;
+
+    visualiseOctree(value, level);
+}
+function visualiseOctree(value, level) {
+    splat.data.resetRendering();
+    splat.splats.forEach(async singleSplat => {
+        singleSplat.Selected = 0;
+    })
+    
+    let node = splat.octree.findNodesByLevel(level)[value];
+    nodeBox = new SPLAT.Box3(node.min, node.max);
+
+    let allNodes = splat.octree.cull(nodeBox);
+    allNodes.forEach(node => {
+        let nodeData = node.data
+        if(nodeData) {
+            let splatArray = nodeData.data;
+            if(splatArray) {
+                splatArray.forEach(singleSplat => {
+                    if(nodeBox.contains(singleSplat.PositionVec3)) {
+                        singleSplat.Selected = 1;
+                        singleSplat.Rendered = 1;
+                    }
+                });
+            }
+        }
+    });
+    splat.applyRendering();
+
+    nodeBox.drawBox(renderer, new SPLAT.Vector4(1.0, 1.0, 1.0, 0.1), new SPLAT.Vector4(1.0, 0.0, 0.0, 1.0));
+}
+
+document.getElementById('closeButton').addEventListener('click', function() {
+    if(nodeBox) {
+        nodeBox.ereaseBox(renderer);
+    }
+    
+    renderer.removeProgram(octreeRenderProgram);
+    clearSelection();
+    removeAllRenderPrograms();
+
+    splat.splats.forEach(singleSplat => {
+        singleSplat.Selected = 0;
+        singleSplat.Rendered = 1;
+        singleSplat.ResetColor();
+    })
+    splat.applyRendering();
+    
+    var box = document.getElementById('controlBox');
+    box.style.bottom = '-300px';
 });
 
 
+// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+//                                    Select splats per index
+// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 document.getElementById('start-show-splats').addEventListener('click', function() {
     clearSelection();
 
@@ -200,123 +316,37 @@ document.getElementById('start-show-splats').addEventListener('click', function(
 
         currentlySelectedSplats.push(splat.splats[i]);
     }
-    splat.updateRenderingOfSplats();
-    console.log(splat._data.selection)
+    splat.applyRendering();
 });
 
 
+// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+//                                    Select splats per axis
+// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 document.getElementById('select-splats').addEventListener('click', function() {
     clearSelection();
 
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
 
-    var layerValue = document.getElementById('layer-value').value;
-    var isPositive = document.getElementById('toggle-feature-pos-neg').checked;
-    var selectedAxis = document.getElementById('axis-select').value;
+    let layerValue = document.getElementById('layer-value').value;
+    let isPositive = document.getElementById('toggle-feature-pos-neg').checked;
+    let selectedAxis = document.getElementById('axis-select').value;
 
-    var selectedSplat = _intersectionTester.testLayer(layerValue, isPositive, selectedAxis);
+    let selectedSplat = _intersectionTester.testLayer(layerValue, isPositive, selectedAxis);
 
     if (selectedSplat !== null){
         selectedSplat.forEach(singleSplat => {
             singleSplat.Selected = 1
             currentlySelectedSplats.push(singleSplat);
         });
-        splat.updateRenderingOfSplats();
+        splat.applyRendering();
     }
 
 });
 
-
-
-document.getElementById('select-splats-mouse').addEventListener('click', function() {
-    clearSelection();
-
-    document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
-    addMouseListener();
-});
-
-function removeMouseListener() {
-    document.removeEventListener('mouseup', handleMouseDown, true);
-}
-
-function addMouseListener() {
-    document.addEventListener('mouseup', handleMouseDown, true);
-}
-
-function handleMouseDown(event) {
-    if (event.button === 0) {
-        const x = (event.clientX / canvas.clientWidth) * 2 - 1;
-        const y = -(event.clientY / canvas.clientHeight) * 2 + 1;
-
-        console.log("mouse Position: (" + x + " ; " + y + ")")
-        var selectedSplat = _intersectionTester.testPointSingleSplats(x, y);
-
-        if (selectedSplat !== null){
-            selectedSplat.forEach(singleSplat => {
-                singleSplat.Selected = 1;
-                currentlySelectedSplats.push(singleSplat);
-            });
-            splat.updateRenderingOfSplats();
-        }
-
-        removeMouseListener();
-    }
-}
-
-document.getElementById("show-splats-camera-frustum").addEventListener("click", function() {
-    clearSelection();
-    document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
-
-    var selectedSplat = raycaster.testCameraViewFrustum(camera);
-    if (selectedSplat !== null){
-        console.log("found: " + selectedSplat.length)
-        selectedSplat.forEach(singleSplat => {
-            singleSplat.Selected = 1
-            currentlySelectedSplats.push(singleSplat);
-        });
-        splat.updateRenderingOfSplats();
-    }
-
-    setTimeout(function() {
-        renderer.removeAllPrograms();
-    }, 9000);
-
-    setTimeout(function() {
-        clearSelection();
-
-        splat.splats.forEach(async singleSplat => {
-            singleSplat.Selected = 0;
-        })
-        splat.updateRenderingOfSplats();
-    }, 5500);
-
-    setTimeout(function() {
-        splat.splats.forEach(async singleSplat => {
-            singleSplat.Rendered = 0;
-        })
-        currentlySelectedSplats.forEach(singleSplat => {
-            singleSplat.Rendered = 1;
-        })
-        splat.updateRenderingOfSplats();
-    }, 5000);
-});
-
-document.getElementById("select-splats-camera-frustum").addEventListener("click", function() {
-    clearSelection();
-    document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
-
-    var selectedSplat = raycaster.testCameraViewFrustum(camera, true, 5);
-    if (selectedSplat !== null){
-        console.log("found: " + selectedSplat.length)
-        selectedSplat.forEach(singleSplat => {
-            singleSplat.Selected = 1;
-            currentlySelectedSplats.push(singleSplat);
-        });
-        splat.updateRenderingOfSplats();
-    }
-
-});
-
+// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+//                                    Select splats per cube
+// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 document.getElementById("select-splats-cube").addEventListener("click", function() {
     clearSelection();
     document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
@@ -340,29 +370,75 @@ document.getElementById("select-splats-cube").addEventListener("click", function
     renderPrograms.push(renderProgram);
     renderer.addProgram(renderProgram);
 
-    var selectedSplat = raycaster.testBox(upperLeftCorner, bottomRightCorner);
-    if (selectedSplat !== null){
-        console.log("found: " + selectedSplat.length)
-        selectedSplat.forEach(singleSplat => {
-            singleSplat.Selected = 1;
-            currentlySelectedSplats.push(singleSplat);
-        });
-        splat.updateRenderingOfSplats();
-    }
+    let box = new SPLAT.Box3(new SPLAT.Vector3(x1, y1, z1), new SPLAT.Vector3(x2, y2, z2));
+    let nodes = splat._octree.cull(box);
+
+    nodes.forEach(node => {
+        let nodeData = node.data;
+        if (nodeData && nodeData.data) {
+            for(let singleSplat of nodeData.data) {
+                if(box.intersectsBox(singleSplat.bounds)) {
+                    singleSplat.Selected = 1;   
+                }
+            }
+        }
+    });
+    splat.applyRendering();
 
     setTimeout(function() {
         removeAllRenderPrograms();
     }, 10000);
 })
 
-document.getElementById("set-transparency").addEventListener("click", function() {
+// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+//                                    Select splats per camera frustum
+// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+document.getElementById("select-splats-camera-frustum").addEventListener("click", function() {
+    clearSelection();
+    document.getElementById('side-menu').style.left = '-300px'; // Menü schließen
 
-    console.log(splat.splats[0].Color)
+    let minX = -1, minY = -1;
+    let maxX = 1, maxY = 1;
+
+    let nearTopLeft = camera.screenToWorldPoint(minX, maxY);
+    let nearBottomRight = camera.screenToWorldPoint(maxX, minY);
+    let nearTopRight = camera.screenToWorldPoint(maxX, maxY);
+    let nearBottomLeft = camera.screenToWorldPoint(minX, minY);
+
+    let farTopLeft = nearTopLeft.add(camera.screenPointToRay(minX, maxY).multiply(camera.data.far));
+    let farTopRight = nearTopRight.add(camera.screenPointToRay(maxX, maxY).multiply(camera.data.far));
+    let farBottomLeft = nearBottomLeft.add(camera.screenPointToRay(minX, minY).multiply(camera.data.far));
+    let farBottomRight = nearBottomRight.add(camera.screenPointToRay(maxX, minY).multiply(camera.data.far));
+
+    const cameraFrustum = new SPLAT.Frustum();
+    cameraFrustum.setFromPoints(nearTopLeft, nearTopRight, nearBottomLeft, nearBottomRight, farTopLeft, farTopRight,farBottomLeft, farBottomRight);
+
+    const nodes = splat._octree.cull(cameraFrustum);
+    
+    nodes.forEach(node => {
+        let nodeData = node.data;
+        if (nodeData && nodeData.data) {
+            for(let singleSplat of nodeData.data) {
+                singleSplat.Selected = 1;
+                currentlySelectedSplats.push(singleSplat);
+            }
+        }
+    });
+    
+    splat.applyRendering();
+});
+
+
+// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+//                                    Set transparency
+// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+document.getElementById("set-transparency").addEventListener("click", function() {
+    const slider = document.getElementById('slider');
+    
     splat.splats.forEach(async singleSplat => {
-        let color = new Uint8Array([singleSplat.Color[0], singleSplat.Color[1], singleSplat.Color[2], 5]);
-        singleSplat.Color = color;
+        singleSplat.setBlending(parseFloat(slider.value));
     })
-    splat.updateRenderingOfSplats();
+    splat.applyRendering();
 })
 
 document.getElementById("Reset-transparency").addEventListener("click", function() {
@@ -370,7 +446,7 @@ document.getElementById("Reset-transparency").addEventListener("click", function
     splat.splats.forEach(async singleSplat => {
         singleSplat.ResetColor();
     })
-    splat.updateRenderingOfSplats();
+    splat.applyRendering();
 })
 
 function removeAllRenderPrograms() {
