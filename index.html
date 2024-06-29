@@ -8,6 +8,12 @@
 </head>
 
 <body>
+<div id="loader-overlay">
+    <div id="spinner"></div>
+    <div id="loading-text">Loading data and creating splat scene...</div>
+    <ul id="completed-sections"></ul>
+</div>
+
 <button id="menu-toggle" style="position: absolute; top: 10px; left: 10px; z-index: 100;">Menu</button>
 <div id="side-menu" style="position: fixed; left: -300px; top: 0; width: 250px; height: 90%; background: white; z-index: 99; transition: left 0.5s; overflow-y: auto;">
 
@@ -38,7 +44,12 @@
 
     <button id="render-center-splats">Show center of selected splats</button>
     <hr>
+    
+    <h2>DR Simulation</h2>
+    <button id="simulate-dr">Simulate DR Experience</button>
 
+    <hr>
+    
     <h2>Visualise Octree</h2>
     <button id="show-octree">Visualise Octree</button>
     
@@ -125,6 +136,8 @@
     <button id="Reset-transparency">Reset</button>
 </div>
 
+<button class="floating-button" id="floatingButton">Floating Button</button>
+
 <div id="controlBox">
     <div class="slider-group">
         <span class="slider-label">Octree level:</span>
@@ -138,6 +151,46 @@
     </div>
     <button id="closeButton">Close</button>
 </div>
+
+<div id="diminishBox">
+    <div class="toggle-container">
+        <span>Show First Frustum</span>
+        <div class="switch">
+            <input type="checkbox" id="firstFrustumToggle">
+            <label for="firstFrustumToggle"></label>
+        </div>
+    </div>
+    <div class="toggle-container">
+        <span>Show Second Frustum</span>
+        <div class="switch">
+            <input type="checkbox" id="secondFrustumToggle">
+            <label for="secondFrustumToggle"></label>
+        </div>
+    </div>
+    <div class="toggle-container">
+        <span>Show Rectangle</span>
+        <div class="switch">
+            <input type="checkbox" id="rectangleToggle">
+            <label for="rectangleToggle"></label>
+        </div>
+    </div>
+    <div class="toggle-container">
+        <span>Show Selection Volume</span>
+        <div class="switch">
+            <input type="checkbox" id="selectionVolumeToggle">
+            <label for="selectionVolumeToggle"></label>
+        </div>
+    </div>
+    <div class="toggle-container">
+        <span>Cull Splats</span>
+        <div class="switch">
+            <input type="checkbox" id="cullByCubeToggle" checked>
+            <label for="cullByCubeToggle"></label>
+        </div>
+    </div>
+    <button id="closeDRSimulation">Close</button>
+</div>
+
 
 <canvas id="canvas"></canvas>
 <script src="./main.js" type="module"></script>

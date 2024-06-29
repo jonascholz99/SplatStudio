@@ -24,7 +24,7 @@ canvas {
   padding: 20px;  
   box-shadow: 0 0 10px rgba(0,0,0,0.5);
   transition: left 0.5s;
-  overflow: hidden; /* Stellt sicher, dass keine inneren Elemente über den Rand hinausragen */
+  overflow: hidden; 
 }
 
 
@@ -39,10 +39,10 @@ canvas {
 }
 
 #side-menu hr {
-  border: none;        /* Entfernt die Standardgrenze */
-  height: 1px;         /* Setzt die Höhe der Linie */
-  background-color: #ccc; /* Wählt die Farbe der Linie */
-  margin: 20px 0;      /* Fügt oben und unten Abstand hinzu */
+  border: none;        
+  height: 1px;         
+  background-color: #ccc; 
+  margin: 20px 0;      
 }
 
 #vector3UpCorner {
@@ -64,11 +64,11 @@ canvas {
 }
 
 #vector3Form label {
-  margin-right: 5px; /* Etwas Abstand rechts vom Label */
+  margin-right: 5px; 
 }
 
 #vector3Form input {
-  width: 60px; /* Setzt eine spezifische Breite für die Eingabefelder */
+  width: 60px; 
 }
 
 .slider-container {
@@ -111,18 +111,166 @@ canvas {
     margin-bottom: 10px;
 }
 input[type="range"] {
-    flex: 1 0 60%; /* Anpassung für mehr Platz für die Labels */
+    flex: 1 0 60%; 
 }
 .slider-value {
-    flex: 0 1 30%; /* Platzanpassung für Textzentrierung */
+    flex: 0 1 30%; 
     text-align: center;
 }
 .slider-label {
-    flex: 0 1 10%; /* Bereitstellung von Platz für die Überschrift */
+    flex: 0 1 10%; 
     text-align: right;
     margin-right: 10px;
     font-weight: bold;
 }
 #closeButton {
     margin-top: 10px;
+}
+
+#loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 900;
+    flex-direction: column;
+    display: flex;
+}
+
+#spinner {
+    border: 16px solid #f3f3f3;
+    border-top: 16px solid #3498db;
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+#loading-text {
+    font-size: 1.2em;
+    color: white;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.floating-button {
+    position: fixed;
+    bottom: -100px; 
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    background-color: #28a745;
+    color: white;
+    cursor: pointer;
+    transition: bottom 0.5s ease;
+    z-index: 1000;
+}
+
+.ring {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid red;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999; 
+}
+
+.rectangle {
+    position: absolute;
+    border: 2px solid blue;
+    z-index: 9999; 
+}
+
+#diminishBox {
+    position: fixed;
+    bottom: -300px;
+    left: 0;
+    right: 0;
+    margin: auto;
+    width: 300px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    padding: 20px;
+    box-sizing: border-box;
+    transition: bottom 0.5s;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 99999;
+}
+
+.toggle-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    width: 100%;
+    justify-content: space-between;
+}
+
+span {
+    flex: 1;
+    text-align: left;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 20px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.switch label {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: grey;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.switch label:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + label {
+    background-color: green;
+}
+
+input:checked + label:before {
+    transform: translateX(14px);
 }
