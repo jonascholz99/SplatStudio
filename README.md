@@ -1,66 +1,62 @@
 # Splat Studio
 
-Dieser Gaussian Splatting Editor entstammt aus einer Masterarbeit mit dem Titel "DimSplat. Development of a Diminished Reality Prototype with Gaussian Splats for Mobile Augmented Reality Applications". Dabei baut er auf einer modifizierten Variante des `gsplat.js` Frameworks von Dylan Ebert ([Github](https://github.com/huggingface/gsplat.js/tree/main)) auf. 
+This Gaussian Splatting Editor is derived from a master's thesis titled "DimSplat. Development of a Diminished Reality Prototype with Gaussian Splats for Mobile Augmented Reality Applications". It is based on a modified version of the `gsplat.js` framework by Dylan Ebert ([Github](https://github.com/huggingface/gsplat.js/tree/main)).
 
-Dieser Editor dient dem Testen der Funktionen aus dem im Rahmen der Arbeit umgebauten Framework, welches [hier](https://github.com/jonascholz99/gaussian-splatting) zu finden ist. Der Editor bietet folgende Funktionen:
+This editor serves to test the functions of the framework modified in the context of the thesis, which can be found [here](https://github.com/jonascholz99/gaussian-splatting). The editor offers the following functions:
 
-## Funktionen
+## Functions
 
 ### SPLAT Actions
 
-1. Reset
-    - Setzt alle Änderungen zurück und stellt den Ausgangszustand wieder her.
+1. **Reset**
+    - Resets all changes and restores the initial state.
 
-2. Select all
-    - Wählt alle Splats aus.
+2. **Select all**
+    - Selects all splats.
 
-3. Select none
-    - Hebt die Auswahl aller Splats auf.
+3. **Select none**
+    - Deselects all splats.
 
-4. Invert Selection
-    - Kehrt die aktuelle Auswahl der Splats um.
+4. **Invert Selection**
+    - Inverts the current selection of splats.
 
-5. Show all
-    - Zeigt alle Splats an.
+5. **Show all**
+    - Displays all splats.
 
-6. Show none
-    - Blendet alle Splats aus.
+6. **Show none**
+    - Hides all splats.
 
-7. Render only selected
-    - Rendert nur die ausgewählten Splats.
+7. **Render only selected**
+    - Renders only the selected splats.
 
-8. Render except selected
-    - Rendert alle Splats außer den ausgewählten.
+8. **Render except selected**
+    - Renders all splats except the selected ones.
 
-9. Show center of selected splats
-    - Zeigt das Zentrum der ausgewählten Splats an.
+9. **Show center of selected splats**
+    - Displays the center of the selected splats.
 
 ### DR Simulation
-Simuliert eine DR-Erfahrung, bei der bestimmte Bereiche der Splats hervorgehoben oder maskiert werden können.
+Simulates a diminished reality (DR) experience where certain areas of the splats can be highlighted or masked.
 
 ### Visualise Octree
-Visualisiert die Octree-Struktur, die zur Organisation der Splats verwendet wird.
+Visualizes the octree structure used to organize the splats.
 
-### Select Splats per index
-Wählt eine bestimmte Anzahl von Splats basierend auf ihrem Index aus. Die Anzahl der auszuwählenden Splats kann über ein Eingabefeld angegeben werden.
+### Select Splats per Index
+Selects a specific number of splats based on their index. The number of splats to be selected can be specified via an input field.
 
 ### Select Splats per Layer
-Ermöglicht die Auswahl einer Achse (X, Y oder Z), entlang der die Splats ausgewählt werden sollen.
+Allows selection of an axis (X, Y, or Z) along which the splats should be selected.
 
 ### Select per Cube
-
-Wählt die Splats aus, die innerhalb des angegebenen Würfels liegen.
+Selects the splats that lie within the specified cube.
 
 ### Select Splats Camera Frustum
+Selects the splats that are within the current camera view frustum.
 
-Wählt die Splats aus, die innerhalb des aktuellen Sichtfelds der Kamera liegen.
+### Set Transparency
+Sets the transparency of the splats to the value specified by the slider.
 
-### Set transparency
+### Additional Functions
+The editor includes additional functions for selecting and editing splats, controlling the display, and performing various actions within the 3D scene.
 
-Stellt die Transparenz der Splats auf den über den Schieberegler angegebenen Wert ein.
-
-### Weitere Funktionen
-
-Der Editor enthält zusätzliche Funktionen zur Auswahl und Bearbeitung von Splats, zur Steuerung der Anzeige und zur Durchführung verschiedener Aktionen innerhalb der 3D-Szene.
-
-Für eine detaillierte Übersicht und Beispiele siehe den vollständigen Code im Repository.
+For a detailed overview and examples, see the full code in the repository.
